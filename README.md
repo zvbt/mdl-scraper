@@ -29,4 +29,4 @@ Change the port if you need to [index.js](/index.js#L6)
 Might get shut down at any time: `https://mdl.zvbt.space/data?username=[your mdl username]`
 
 ##
-made with ❤ by zvbt
+Made with ❤ by zvbt
