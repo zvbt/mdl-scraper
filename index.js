@@ -1,15 +1,13 @@
 const cheerio = require('cheerio');
-const fsPromises = require('fs/promises');
-const path = require('path');
 const { Elysia } = require('elysia');
-const fs = require('fs').promises;
-const config = require('./config.js');
+const fetch = require('node-fetch');
 
 const server = new Elysia();
-const jsonPath = path.join(process.cwd(), '/data.json');
+const port = 8655; // Change if needed
 
-async function getLastUpdate() {
-    const url = `https://mydramalist.com/profile/${config.username}`;
+
+async function getLastUpdate(username) {
+    const url = `https://mydramalist.com/profile/${username}`;
     console.log(`Scraping URL: ${url}`);
     
     try {
@@ -37,23 +35,29 @@ async function getLastUpdate() {
             });
         });
 
-        await fsPromises.writeFile(jsonPath, JSON.stringify(list));
+        return list;
 
     } catch (error) {
         console.log(error);
+        return [];
     }
 }
 
-server.get('/data', async () => {
+server.get('/data', async (request) => {
+    const username = request.query.username;
+
+    if (!username) {
+        return { error: 'Username query parameter is required (/data?username=Cyadine)' };
+    }
+
     try {
-        await getLastUpdate();
+        const data = await getLastUpdate(username);
         console.log("✔ Scraped " + Date());
-        const data = await fs.readFile(jsonPath, 'utf-8');
-        return JSON.parse(data);
+        return data;
     } catch (error) {
         return { error: 'Internal Server Error' };
     }
 });
 
-server.listen(config.port);
-console.log(`Server running at http://127.0.0.1:${config.port}/`);
+server.listen(port);
+console.log(`Server running at http://127.0.0.1:${port}/`);
