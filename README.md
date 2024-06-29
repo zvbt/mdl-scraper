@@ -1,15 +1,32 @@
 # mdl-scraper
 
-To install dependencies:
+Simple MyDramalist.com api to fetch the latest list update.
 
+## Usage
+
+### Self hosted (recommended)
+
+1. Clone the repo
 ```bash
-bun install
+git clone https://github.com/zvbt/mdl-scraper.git && cd mdl-scraper
 ```
-
-To run:
-
+2. Install dependencies
+```bash
+bun instal
+```
+3. Run the project
 ```bash
 bun start
 ```
+7. Now go to
+```
+http://127.0.0.1:8655/data?username=[your mdl username]
+```
+Change the port if you need to [index.js](/index.js#L6)
 
-This project was created using `bun init` in bun v1.1.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+### Public api
+
+Might get shut down at any time: `https://mdl.zvbt.space/data?username=[your mdl username]`
+
+##
+made with ❤ by zvbt
