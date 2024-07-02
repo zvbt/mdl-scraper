@@ -3,7 +3,7 @@ const http = require('http');
 const fetch = require('cross-fetch');
 const url = require('url');
 
-const port = 8655; // Change if needed
+const port = 8654; // Change if needed
 
 async function getLastUpdate(username) {
     const profileUrl = `https://mydramalist.com/profile/${username}`;
