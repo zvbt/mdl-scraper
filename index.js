@@ -1,17 +1,16 @@
 const cheerio = require('cheerio');
-const { Elysia } = require('elysia');
-const fetch = require('node-fetch');
+const http = require('http');
+const fetch = require('cross-fetch');
+const url = require('url');
 
-const server = new Elysia();
 const port = 8655; // Change if needed
 
-
 async function getLastUpdate(username) {
-    const url = `https://mydramalist.com/profile/${username}`;
-    console.log(`Scraping URL: ${url}`);
+    const profileUrl = `https://mydramalist.com/profile/${username}`;
+    console.log(`Scraping URL: ${profileUrl}`);
     
     try {
-        const response = await fetch(url);
+        const response = await fetch(profileUrl);
         const html = await response.text();
         const $ = cheerio.load(html);
         const list = [];
@@ -43,21 +42,34 @@ async function getLastUpdate(username) {
     }
 }
 
-server.get('/data', async (request) => {
-    const username = request.query.username;
+const server = http.createServer(async (req, res) => {
+    const reqUrl = url.parse(req.url, true);
+    const path = reqUrl.pathname;
 
-    if (!username) {
-        return { error: 'Username query parameter is required (/data?username=Cyadine)' };
-    }
+    if (path === '/data') {
+        const username = reqUrl.query.username;
 
-    try {
-        const data = await getLastUpdate(username);
-        console.log("✔ Scraped " + Date());
-        return data;
-    } catch (error) {
-        return { error: 'Internal Server Error' };
+        if (!username) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Username query parameter is required (/data?username=Cyadine)' }));
+            return;
+        }
+
+        try {
+            const data = await getLastUpdate(username);
+            console.log("✔ Scraped " + Date());
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+        } catch (error) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal Server Error' }));
+        }
+    } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not Found' }));
     }
 });
 
-server.listen(port);
-console.log(`Server running at http://127.0.0.1:${port}/`);
+server.listen(port, () => {
+    console.log(`Server running at http://127.0.0.1:${port}/`);
+});

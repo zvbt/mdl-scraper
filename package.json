@@ -2,16 +2,13 @@
   "name": "mdl-scraper",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
-    "elysia": "^1.0.22"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
+    "cross-fetch": "^4.0.0"
   },
   "version": "1.0.1",
   "description": "Simple api to scrape Mydramalist.com to get latest watchlist update.",
   "main": "index.js",
   "scripts": {
-    "start": "bun index.js"
+    "start": "node index.js"
   },
   "author": "zvbt",
   "license": "MIT"
