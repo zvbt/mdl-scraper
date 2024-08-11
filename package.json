@@ -1,8 +1,8 @@
 {
   "name": "mdl-scraper",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
-    "elysia": "^1.0.22"
+    "cheerio": "^1.0.0",
+    "elysia": "^1.1.5"
   },
   "devDependencies": {
     "@types/bun": "latest"
