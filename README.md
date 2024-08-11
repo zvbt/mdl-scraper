@@ -12,11 +12,11 @@ git clone https://github.com/zvbt/mdl-scraper.git && cd mdl-scraper
 ```
 2. Install dependencies
 ```bash
-bun instal
+npm install
 ```
 3. Run the project
 ```bash
-bun start
+npm start
 ```
 7. Now go to
 ```
