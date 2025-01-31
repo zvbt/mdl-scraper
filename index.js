@@ -1,17 +1,24 @@
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const http = require('http');
-const fetch = require('cross-fetch');
 const url = require('url');
+const cheerio = require('cheerio');
+
+puppeteer.use(StealthPlugin());
 
 const port = 8654; // Change if needed
 
 async function getLastUpdate(username) {
     const profileUrl = `https://mydramalist.com/profile/${username}`;
     console.log(`Scraping URL: ${profileUrl}`);
-    
+
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+
     try {
-        const response = await fetch(profileUrl);
-        const html = await response.text();
+        await page.goto(profileUrl, { waitUntil: "networkidle2" });
+
+        const html = await page.content();
         const $ = cheerio.load(html);
         const list = [];
 
@@ -34,10 +41,12 @@ async function getLastUpdate(username) {
             });
         });
 
+        await browser.close();
         return list;
 
     } catch (error) {
-        console.log(error);
+        console.error("Puppeteer failed:", error);
+        await browser.close();
         return [];
     }
 }
@@ -57,7 +66,7 @@ const server = http.createServer(async (req, res) => {
 
         try {
             const data = await getLastUpdate(username);
-            console.log("✔ Scraped " + Date());
+            console.log("✅ Scraped " + Date()); 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(data));
         } catch (error) {
