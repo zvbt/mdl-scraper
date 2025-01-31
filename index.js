@@ -12,7 +12,15 @@ async function getLastUpdate(username) {
     const profileUrl = `https://mydramalist.com/profile/${username}`;
     console.log(`Scraping URL: ${profileUrl}`);
 
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-gpu",
+            "--disable-dev-shm-usage"
+        ]
+    });
     const page = await browser.newPage();
 
     try {
