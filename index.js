@@ -1,39 +1,53 @@
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { chromium } = require('playwright');
 const http = require('http');
 const url = require('url');
 const cheerio = require('cheerio');
 
-puppeteer.use(StealthPlugin());
-
-const port = 8654; // Change if needed
-
+// Apply basic stealth by setting random User-Agent and disabling WebGL
 async function getLastUpdate(username) {
     const profileUrl = `https://mydramalist.com/profile/${username}`;
     console.log(`Scraping URL: ${profileUrl}`);
 
-    const browser = await puppeteer.launch({
-        headless: 'new',
-        args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-gpu",
-            "--disable-dev-shm-usage"
-        ]
-    });
-    const page = await browser.newPage();
-
+    let browser;
     try {
-        await page.goto(profileUrl, { waitUntil: "networkidle2" });
+        browser = await chromium.launch({
+            headless: true,
+            args: [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-software-rasterizer",
+            ]
+        });
+
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        });
+        const page = await context.newPage();
+
+        // Apply WebGL and Webdriver stealth techniques
+        await page.addInitScript(() => {
+            // Disable WebGL
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            window.chrome = { app: {}, webstore: {}, runtime: {} }; // Mock Chrome object
+            delete navigator.__proto__.webdriver;
+        });
+
+        await page.goto(profileUrl, { waitUntil: "domcontentloaded" });
 
         const html = await page.content();
+        await browser.close(); // Close browser after getting content
+
         const $ = cheerio.load(html);
         const list = [];
-
         const selector = '#content > div > div.container-fluid.profile-container > div > div.col-lg-8.col-md-8 > div.row.stats-section > div:nth-child(2) > div > ul > li';
+        const items = $(selector);
 
-        $(selector).first().each(function () {
+        items.first().each(function () {
             const activityHtml = $(this).find('.activity').html();
+            if (!activityHtml) return;
+
             const episodeInfo = activityHtml.split('<div').shift().replace('<strong>', '').replace('</strong>', '');
             const lastUpdateTime = activityHtml.split('">').pop().split('</').shift();
             const dramaUrl = "https://mydramalist.com" + $(this).find('a').attr('href');
@@ -49,12 +63,10 @@ async function getLastUpdate(username) {
             });
         });
 
-        await browser.close();
         return list;
-
     } catch (error) {
-        console.error("Puppeteer failed:", error);
-        await browser.close();
+        console.error("Playwright Error:", error);
+        if (browser) await browser.close();
         return [];
     }
 }
@@ -74,12 +86,14 @@ const server = http.createServer(async (req, res) => {
 
         try {
             const data = await getLastUpdate(username);
-            console.log("✅ Scraped " + Date()); 
+            console.log("Scraped " + Date());
+
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(data));
         } catch (error) {
+            console.error("Server Error:", error);
             res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Internal Server Error' }));
+            res.end(JSON.stringify({ error: 'Internal Server Error', details: error.message }));
         }
     } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -87,6 +101,6 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
-server.listen(port, () => {
-    console.log(`Server running at http://127.0.0.1:${port}/`);
+server.listen(8654, () => {
+    console.log(`Server running at http://127.0.0.1:8654/`);
 });
