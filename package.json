@@ -14,6 +14,7 @@
   "description": "Simple api to scrape Mydramalist.com to get latest watchlist update.",
   "main": "index.js",
   "scripts": {
+    "prestart": "npx playwright install-deps && npx playwright install",
     "start": "node index.js"
   },
   "author": "zvbt",
