@@ -3,7 +3,6 @@ const http = require('http');
 const url = require('url');
 const cheerio = require('cheerio');
 
-// Apply basic stealth by setting random User-Agent and disabling WebGL
 async function getLastUpdate(username) {
     const profileUrl = `https://mydramalist.com/profile/${username}`;
     console.log(`Scraping URL: ${profileUrl}`);
@@ -34,7 +33,18 @@ async function getLastUpdate(username) {
             delete navigator.__proto__.webdriver;
         });
 
-        await page.goto(profileUrl, { waitUntil: "domcontentloaded" });
+        await page.route('**/*', (route) => {
+            const req = route.request();
+            // block unnecessary requests
+            const blocked = ['stylesheet', 'font', 'media', 'image'];
+            if (blocked.includes(req.resourceType())) {
+                // console.log(`Blocked resource type: ${req.resourceType()}`);
+                return route.abort();
+            }
+            route.continue();
+        });
+
+        await page.goto(profileUrl, { waitUntil: "networkidle" });
 
         const html = await page.content();
         await browser.close(); // Close browser after getting content
@@ -101,6 +111,6 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
-server.listen(8654, () => {
-    console.log(`Server running at http://127.0.0.1:8654/`);
+server.listen(8655, () => {
+    console.log(`Server running at http://127.0.0.1:8655/`);
 });
