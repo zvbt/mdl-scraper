@@ -2,19 +2,13 @@
   "name": "mdl-scraper",
   "dependencies": {
     "cheerio": "^1.0.0",
-    "playwright": "^1.50.1",
-    "playwright-extra": "^4.3.6",
-    "playwright-extra-plugin-stealth": "^0.0.1",
-    "playwright-extra-stealth": "^0.0.1",
-    "puppeteer": "^24.1.1",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "playwright": "^1.52.0"
   },
   "version": "1.0.1",
   "description": "Simple api to scrape Mydramalist.com to get latest watchlist update.",
   "main": "index.js",
   "scripts": {
-    "prestart": "npx playwright install-deps && npx playwright install",
+    "prestart": "npx playwright install --with-deps chromium",
     "start": "node index.js"
   },
   "author": "zvbt",
