@@ -26,7 +26,7 @@ Change the port if you need to [index.js](/index.js#L6)
 
 ### Public api
 
-Might get shut down at any time: `https://mdl.zvbt.space/data?username=[your mdl username]`
+Might get shut down at any time: `https://mdl.zvbt.cc/data?username=[your mdl username]`
 
 ##
 Made with ❤ by zvbt
